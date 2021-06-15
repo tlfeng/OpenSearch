@@ -729,9 +729,7 @@ public class ConcurrentSeqNoVersioningIT extends AbstractDisruptionTestCase {
         if (args.length < 3) {
             System.err.println("usage: <file> <primaryTerm> <seqNo>");
         } else {
-            try (FileInputStream fis = new FileInputStream(args[0])) {
-                runLinearizabilityChecker(fis, Long.parseLong(args[1]), Long.parseLong(args[2]));
-            }
+            runLinearizabilityChecker(new FileInputStream(args[0]), Long.parseLong(args[1]), Long.parseLong(args[2]));
         }
     }
 

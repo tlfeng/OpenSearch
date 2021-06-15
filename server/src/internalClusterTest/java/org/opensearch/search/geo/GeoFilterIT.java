@@ -115,20 +115,19 @@ public class GeoFilterIT extends OpenSearchIntegTestCase {
     }
 
     private static byte[] unZipData(String path) throws IOException {
-        try (InputStream is = Streams.class.getResourceAsStream(path)) {
-            if (is == null) {
-                throw new FileNotFoundException("Resource [" + path + "] not found in classpath");
-            }
-
-            try (
-                ByteArrayOutputStream out = new ByteArrayOutputStream();
-                GZIPInputStream in = new GZIPInputStream(is)
-            ) {
-                Streams.copy(in, out);
-
-                return out.toByteArray();
-            }
+        InputStream is = Streams.class.getResourceAsStream(path);
+        if (is == null) {
+            throw new FileNotFoundException("Resource [" + path + "] not found in classpath");
         }
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        GZIPInputStream in = new GZIPInputStream(is);
+        Streams.copy(in, out);
+
+        is.close();
+        out.close();
+
+        return out.toByteArray();
     }
 
     public void testShapeBuilders() {

@@ -101,10 +101,11 @@ public class VersionProperties {
 
     private static Properties getVersionProperties() {
         Properties props = new Properties();
-        try (InputStream propsStream = VersionProperties.class.getResourceAsStream("/version.properties")) {
-            if (propsStream == null) {
-                throw new IllegalStateException("/version.properties resource missing");
-            }
+        InputStream propsStream = VersionProperties.class.getResourceAsStream("/version.properties");
+        if (propsStream == null) {
+            throw new IllegalStateException("/version.properties resource missing");
+        }
+        try {
             props.load(propsStream);
         } catch (IOException e) {
             throw new IllegalStateException("Failed to load version properties", e);
