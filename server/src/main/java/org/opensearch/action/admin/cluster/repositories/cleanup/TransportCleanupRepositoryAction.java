@@ -85,7 +85,9 @@ import java.util.Collections;
  *
  * @opensearch.internal
  */
-public final class TransportCleanupRepositoryAction extends TransportClusterManagerNodeAction<CleanupRepositoryRequest, CleanupRepositoryResponse> {
+public final class TransportCleanupRepositoryAction extends TransportClusterManagerNodeAction<
+    CleanupRepositoryRequest,
+    CleanupRepositoryResponse> {
 
     private static final Logger logger = LogManager.getLogger(TransportCleanupRepositoryAction.class);
 

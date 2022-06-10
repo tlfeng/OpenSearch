@@ -30,7 +30,7 @@
  * GitHub history for details.
  */
 
-package org.opensearch.action.support.clustermanager;
+package org.opensearch.action.support.master;
 
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -70,11 +70,13 @@ import java.util.function.Predicate;
  * A base class for operations that needs to be performed on the cluster-manager node.
  *
  * @opensearch.internal
+ * @deprecated As of 2.1, because supporting inclusive language, replaced by {@link org.opensearch.action.support.clustermanager.TransportClusterManagerNodeAction}
  */
-public abstract class TransportClusterManagerNodeAction<Request extends ClusterManagerNodeRequest<Request>, Response extends ActionResponse>
-    extends HandledTransportAction<Request, Response> {
+@Deprecated
+public abstract class TransportMasterNodeAction<Request extends MasterNodeRequest<Request>, Response extends ActionResponse> extends
+    HandledTransportAction<Request, Response> {
 
-    private static final Logger logger = LogManager.getLogger(TransportClusterManagerNodeAction.class);
+    private static final Logger logger = LogManager.getLogger(TransportMasterNodeAction.class);
 
     protected final ThreadPool threadPool;
     protected final TransportService transportService;
@@ -83,7 +85,7 @@ public abstract class TransportClusterManagerNodeAction<Request extends ClusterM
 
     private final String executor;
 
-    protected TransportClusterManagerNodeAction(
+    protected TransportMasterNodeAction(
         String actionName,
         TransportService transportService,
         ClusterService clusterService,
@@ -95,7 +97,7 @@ public abstract class TransportClusterManagerNodeAction<Request extends ClusterM
         this(actionName, true, transportService, clusterService, threadPool, actionFilters, request, indexNameExpressionResolver);
     }
 
-    protected TransportClusterManagerNodeAction(
+    protected TransportMasterNodeAction(
         String actionName,
         boolean canTripCircuitBreaker,
         TransportService transportService,
@@ -214,7 +216,7 @@ public abstract class TransportClusterManagerNodeAction<Request extends ClusterM
                             clusterManagerNode,
                             actionName,
                             request,
-                            new ActionListenerResponseHandler<Response>(listener, TransportClusterManagerNodeAction.this::read) {
+                            new ActionListenerResponseHandler<Response>(listener, TransportMasterNodeAction.this::read) {
                                 @Override
                                 public void handleException(final TransportException exp) {
                                     Throwable cause = exp.unwrapCause();

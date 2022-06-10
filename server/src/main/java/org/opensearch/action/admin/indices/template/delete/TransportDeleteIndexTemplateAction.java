@@ -56,7 +56,9 @@ import java.io.IOException;
  *
  * @opensearch.internal
  */
-public class TransportDeleteIndexTemplateAction extends TransportClusterManagerNodeAction<DeleteIndexTemplateRequest, AcknowledgedResponse> {
+public class TransportDeleteIndexTemplateAction extends TransportClusterManagerNodeAction<
+    DeleteIndexTemplateRequest,
+    AcknowledgedResponse> {
 
     private static final Logger logger = LogManager.getLogger(TransportDeleteIndexTemplateAction.class);
 

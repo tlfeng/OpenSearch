@@ -3622,8 +3622,8 @@ public class SnapshotsService extends AbstractLifecycleComponent implements Clus
     }
 
     private class UpdateSnapshotStatusAction extends TransportClusterManagerNodeAction<
-            UpdateIndexShardSnapshotStatusRequest,
-            UpdateIndexShardSnapshotStatusResponse> {
+        UpdateIndexShardSnapshotStatusRequest,
+        UpdateIndexShardSnapshotStatusResponse> {
         UpdateSnapshotStatusAction(
             TransportService transportService,
             ClusterService clusterService,

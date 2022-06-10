@@ -57,7 +57,9 @@ import java.util.List;
  *
  * @opensearch.internal
  */
-public class TransportGetIndexTemplatesAction extends TransportClusterManagerNodeReadAction<GetIndexTemplatesRequest, GetIndexTemplatesResponse> {
+public class TransportGetIndexTemplatesAction extends TransportClusterManagerNodeReadAction<
+    GetIndexTemplatesRequest,
+    GetIndexTemplatesResponse> {
 
     @Inject
     public TransportGetIndexTemplatesAction(

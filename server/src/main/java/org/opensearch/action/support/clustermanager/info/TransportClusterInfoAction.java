@@ -50,7 +50,7 @@ import org.opensearch.transport.TransportService;
  * @opensearch.internal
  */
 public abstract class TransportClusterInfoAction<Request extends ClusterInfoRequest<Request>, Response extends ActionResponse> extends
-        TransportClusterManagerNodeReadAction<Request, Response> {
+    TransportClusterManagerNodeReadAction<Request, Response> {
 
     public TransportClusterInfoAction(
         String actionName,

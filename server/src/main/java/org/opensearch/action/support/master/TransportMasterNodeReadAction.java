@@ -30,7 +30,7 @@
  * GitHub history for details.
  */
 
-package org.opensearch.action.support.clustermanager;
+package org.opensearch.action.support.master;
 
 import org.opensearch.action.ActionResponse;
 import org.opensearch.action.support.ActionFilters;
@@ -45,12 +45,13 @@ import org.opensearch.transport.TransportService;
  * Can also be executed on the local node if needed.
  *
  * @opensearch.internal
+ * @deprecated As of 2.1, because supporting inclusive language, replaced by {@link org.opensearch.action.support.clustermanager.TransportClusterManagerNodeReadAction}
  */
-public abstract class TransportClusterManagerNodeReadAction<
-    Request extends ClusterManagerNodeReadRequest<Request>,
-    Response extends ActionResponse> extends TransportClusterManagerNodeAction<Request, Response> {
+@Deprecated
+public abstract class TransportMasterNodeReadAction<Request extends MasterNodeReadRequest<Request>, Response extends ActionResponse> extends
+    TransportMasterNodeAction<Request, Response> {
 
-    protected TransportClusterManagerNodeReadAction(
+    protected TransportMasterNodeReadAction(
         String actionName,
         TransportService transportService,
         ClusterService clusterService,
@@ -62,7 +63,7 @@ public abstract class TransportClusterManagerNodeReadAction<
         this(actionName, true, transportService, clusterService, threadPool, actionFilters, request, indexNameExpressionResolver);
     }
 
-    protected TransportClusterManagerNodeReadAction(
+    protected TransportMasterNodeReadAction(
         String actionName,
         boolean checkSizeLimit,
         TransportService transportService,

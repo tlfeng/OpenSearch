@@ -140,8 +140,8 @@ public class InternalOrPrivateSettingsPlugin extends Plugin implements ActionPlu
     }
 
     public static class TransportUpdateInternalOrPrivateAction extends TransportClusterManagerNodeAction<
-            UpdateInternalOrPrivateAction.Request,
-            UpdateInternalOrPrivateAction.Response> {
+        UpdateInternalOrPrivateAction.Request,
+        UpdateInternalOrPrivateAction.Response> {
 
         @Inject
         public TransportUpdateInternalOrPrivateAction(

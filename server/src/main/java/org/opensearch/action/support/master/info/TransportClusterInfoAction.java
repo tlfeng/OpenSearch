@@ -24,16 +24,20 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-
 /*
  * Modifications Copyright OpenSearch Contributors. See
  * GitHub history for details.
  */
 
-package org.opensearch.action.support.clustermanager;
+package org.opensearch.action.support.master.info;
 
+import org.opensearch.action.ActionListener;
 import org.opensearch.action.ActionResponse;
 import org.opensearch.action.support.ActionFilters;
+import org.opensearch.action.support.master.TransportMasterNodeReadAction;
+import org.opensearch.cluster.ClusterState;
+import org.opensearch.cluster.block.ClusterBlockException;
+import org.opensearch.cluster.block.ClusterBlockLevel;
 import org.opensearch.cluster.metadata.IndexNameExpressionResolver;
 import org.opensearch.cluster.service.ClusterService;
 import org.opensearch.common.io.stream.Writeable;
@@ -41,16 +45,14 @@ import org.opensearch.threadpool.ThreadPool;
 import org.opensearch.transport.TransportService;
 
 /**
- * A base class for read operations that needs to be performed on the cluster-manager node.
- * Can also be executed on the local node if needed.
+ * Perform cluster information action
  *
  * @opensearch.internal
  */
-public abstract class TransportClusterManagerNodeReadAction<
-    Request extends ClusterManagerNodeReadRequest<Request>,
-    Response extends ActionResponse> extends TransportClusterManagerNodeAction<Request, Response> {
+public abstract class TransportClusterInfoAction<Request extends ClusterInfoRequest<Request>, Response extends ActionResponse> extends
+    TransportMasterNodeReadAction<Request, Response> {
 
-    protected TransportClusterManagerNodeReadAction(
+    public TransportClusterInfoAction(
         String actionName,
         TransportService transportService,
         ClusterService clusterService,
@@ -59,33 +61,31 @@ public abstract class TransportClusterManagerNodeReadAction<
         Writeable.Reader<Request> request,
         IndexNameExpressionResolver indexNameExpressionResolver
     ) {
-        this(actionName, true, transportService, clusterService, threadPool, actionFilters, request, indexNameExpressionResolver);
-    }
-
-    protected TransportClusterManagerNodeReadAction(
-        String actionName,
-        boolean checkSizeLimit,
-        TransportService transportService,
-        ClusterService clusterService,
-        ThreadPool threadPool,
-        ActionFilters actionFilters,
-        Writeable.Reader<Request> request,
-        IndexNameExpressionResolver indexNameExpressionResolver
-    ) {
-        super(
-            actionName,
-            checkSizeLimit,
-            transportService,
-            clusterService,
-            threadPool,
-            actionFilters,
-            request,
-            indexNameExpressionResolver
-        );
+        super(actionName, transportService, clusterService, threadPool, actionFilters, request, indexNameExpressionResolver);
     }
 
     @Override
-    protected final boolean localExecute(Request request) {
-        return request.local();
+    protected String executor() {
+        // read operation, lightweight...
+        return ThreadPool.Names.SAME;
     }
+
+    @Override
+    protected ClusterBlockException checkBlock(Request request, ClusterState state) {
+        return state.blocks()
+            .indicesBlockedException(ClusterBlockLevel.METADATA_READ, indexNameExpressionResolver.concreteIndexNames(state, request));
+    }
+
+    @Override
+    protected final void masterOperation(final Request request, final ClusterState state, final ActionListener<Response> listener) {
+        String[] concreteIndices = indexNameExpressionResolver.concreteIndexNames(state, request);
+        doMasterOperation(request, concreteIndices, state, listener);
+    }
+
+    protected abstract void doMasterOperation(
+        Request request,
+        String[] concreteIndices,
+        ClusterState state,
+        ActionListener<Response> listener
+    );
 }

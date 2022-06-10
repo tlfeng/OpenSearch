@@ -73,7 +73,9 @@ import java.util.stream.Collectors;
  *
  * @opensearch.internal
  */
-public class TransportDeleteDanglingIndexAction extends TransportClusterManagerNodeAction<DeleteDanglingIndexRequest, AcknowledgedResponse> {
+public class TransportDeleteDanglingIndexAction extends TransportClusterManagerNodeAction<
+    DeleteDanglingIndexRequest,
+    AcknowledgedResponse> {
     private static final Logger logger = LogManager.getLogger(TransportDeleteDanglingIndexAction.class);
 
     private final Settings settings;
