@@ -42,7 +42,9 @@ import org.opensearch.common.unit.TimeValue;
  * Base request builder for cluster-manager node operations
  *
  * @opensearch.internal
+ * @deprecated As of 2.1, because supporting inclusive language, replaced by {@link org.opensearch.action.support.clustermanager.ClusterManagerNodeOperationRequestBuilder}
  */
+@Deprecated
 public abstract class MasterNodeOperationRequestBuilder<
     Request extends MasterNodeRequest<Request>,
     Response extends ActionResponse,

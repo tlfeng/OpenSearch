@@ -45,7 +45,9 @@ import org.opensearch.transport.TransportService;
  * Can also be executed on the local node if needed.
  *
  * @opensearch.internal
+ * @deprecated As of 2.1, because supporting inclusive language, replaced by {@link org.opensearch.action.support.clustermanager.TransportClusterManagerNodeReadAction}
  */
+@Deprecated
 public abstract class TransportMasterNodeReadAction<Request extends MasterNodeReadRequest<Request>, Response extends ActionResponse> extends
     TransportMasterNodeAction<Request, Response> {
 

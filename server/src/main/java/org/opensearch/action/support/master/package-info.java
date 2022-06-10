@@ -7,4 +7,5 @@
  */
 
 /** Master Node transport handlers. */
+@Deprecated
 package org.opensearch.action.support.master;

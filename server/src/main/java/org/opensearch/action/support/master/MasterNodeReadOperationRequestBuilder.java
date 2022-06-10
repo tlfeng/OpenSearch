@@ -40,7 +40,9 @@ import org.opensearch.client.OpenSearchClient;
  * Base request builder for cluster-manager node read operations that can be executed on the local node as well
  *
  * @opensearch.internal
+ * @deprecated As of 2.1, because supporting inclusive language, replaced by {@link org.opensearch.action.support.clustermanager.ClusterManagerNodeReadOperationRequestBuilder}
  */
+@Deprecated
 public abstract class MasterNodeReadOperationRequestBuilder<
     Request extends MasterNodeReadRequest<Request>,
     Response extends ActionResponse,

@@ -41,7 +41,9 @@ import java.io.IOException;
  * Base request for cluster-manager based read operations that allows to read the cluster state from the local node if needed
  *
  * @opensearch.internal
+ * @deprecated As of 2.1, because supporting inclusive language, replaced by {@link org.opensearch.action.support.clustermanager.ClusterManagerNodeReadRequest}
  */
+@Deprecated
 public abstract class MasterNodeReadRequest<Request extends MasterNodeReadRequest<Request>> extends MasterNodeRequest<Request> {
 
     protected boolean local = false;
