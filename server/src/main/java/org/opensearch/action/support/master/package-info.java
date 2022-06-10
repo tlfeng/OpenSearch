@@ -6,5 +6,6 @@
  * compatible open source license.
  */
 
-/** Cluster Manager Node transport handlers. */
-package org.opensearch.action.support.clustermanager;
+/** Master Node transport handlers. */
+@Deprecated
+package org.opensearch.action.support.master;
