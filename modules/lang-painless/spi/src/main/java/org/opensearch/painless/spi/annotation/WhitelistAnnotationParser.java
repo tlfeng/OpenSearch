@@ -32,8 +32,6 @@
 
 package org.opensearch.painless.spi.annotation;
 
-import org.opensearch.painless.spi.Whitelist;
-
 import java.util.AbstractMap;
 import java.util.Collections;
 import java.util.Map;
@@ -44,9 +42,9 @@ import java.util.stream.Stream;
  * AllowlistAnnotationParser is an interface used to define how to
  * parse an annotation against any allowlist object while loading.
  */
-public interface AllowlistAnnotationParser extends WhitelistAnnotationParser {
+public interface WhitelistAnnotationParser {
 
-    Map<String, AllowlistAnnotationParser> BASE_ANNOTATION_PARSERS = Collections.unmodifiableMap(
+    Map<String, WhitelistAnnotationParser> BASE_ANNOTATION_PARSERS = Collections.unmodifiableMap(
         Stream.of(
             new AbstractMap.SimpleEntry<>(NoImportAnnotation.NAME, NoImportAnnotationParser.INSTANCE),
             new AbstractMap.SimpleEntry<>(DeprecatedAnnotation.NAME, DeprecatedAnnotationParser.INSTANCE),
@@ -54,4 +52,6 @@ public interface AllowlistAnnotationParser extends WhitelistAnnotationParser {
             new AbstractMap.SimpleEntry<>(InjectConstantAnnotation.NAME, InjectConstantAnnotationParser.INSTANCE)
         ).collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue))
     );
+
+    Object parse(Map<String, String> arguments);
 }

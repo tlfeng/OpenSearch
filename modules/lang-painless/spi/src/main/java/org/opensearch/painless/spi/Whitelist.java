@@ -33,6 +33,7 @@
 package org.opensearch.painless.spi;
 
 import org.opensearch.painless.spi.annotation.AllowlistAnnotationParser;
+import org.opensearch.painless.spi.annotation.WhitelistAnnotationParser;
 
 import java.util.Collections;
 import java.util.List;
@@ -69,7 +70,7 @@ public final class Whitelist {
         "java.util.stream.txt" };
 
     public static final List<Whitelist> BASE_WHITELISTS = Collections.singletonList(
-        AllowlistLoader.loadFromResourceFiles(Whitelist.class, AllowlistAnnotationParser.BASE_ANNOTATION_PARSERS, BASE_WHITELIST_FILES)
+        AllowlistLoader.loadFromResourceFiles(Whitelist.class, WhitelistAnnotationParser.BASE_ANNOTATION_PARSERS, BASE_WHITELIST_FILES)
     );
 
     /** The {@link ClassLoader} used to look up the allowlisted Java classes, constructors, methods, and fields. */

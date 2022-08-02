@@ -53,7 +53,7 @@ import java.util.Map;
 public final class AllowlistLoader {
 
     /**
-     * Loads and creates a {@link Allowlist} from one to many text files using only the base annotation parsers.
+     * Loads and creates an {@link Allowlist} from one to many text files using only the base annotation parsers.
      * See {@link #loadFromResourceFiles(Class, Map, String...)} for information on how to structure an allowlist
      * text file.
      */
@@ -518,7 +518,7 @@ public final class AllowlistLoader {
         return new Allowlist(loader, allowlistClasses, allowlistStatics, allowlistClassBindings, Collections.emptyList());
     }
 
-    private static List<Object> parseAllowlistAnnotations(Map<String, AllowlistAnnotationParser> parsers, String line) {
+    static List<Object> parseAllowlistAnnotations(Map<String, AllowlistAnnotationParser> parsers, String line) {
 
         List<Object> annotations;
 
