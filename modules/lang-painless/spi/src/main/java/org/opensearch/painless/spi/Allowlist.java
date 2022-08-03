@@ -13,7 +13,6 @@ import org.opensearch.painless.spi.annotation.WhitelistAnnotationParser;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 
 /**
  * Allowlist contains data structures designed to be used to generate an allowlist of Java classes,
@@ -24,12 +23,33 @@ import java.util.stream.Collectors;
  * {@link AllowlistClass} will contain zero-to-many {@link AllowlistConstructor}s, {@link AllowlistMethod}s, and
  * {@link AllowlistField}s which are what will be available with a Painless script.  See each individual
  * allowlist object for more detail.
+ *
+ * The class is designed to be final. As a workaround to keep backwards compatibility of the deprecated class {@link Whitelist},
+ * the final keyword is not added.
  */
-public final class Allowlist extends Whitelist {
+public class Allowlist {
+
+    static final String[] BASE_ALLOWLIST_FILES = new String[] {
+        "org.opensearch.txt",
+        "java.lang.txt",
+        "java.math.txt",
+        "java.text.txt",
+        "java.time.txt",
+        "java.time.chrono.txt",
+        "java.time.format.txt",
+        "java.time.temporal.txt",
+        "java.time.zone.txt",
+        "java.util.txt",
+        "java.util.function.txt",
+        "java.util.regex.txt",
+        "java.util.stream.txt" };
 
     public static final List<Allowlist> BASE_ALLOWLISTS = Collections.singletonList(
         AllowlistLoader.loadFromResourceFiles(Allowlist.class, WhitelistAnnotationParser.BASE_ANNOTATION_PARSERS, BASE_ALLOWLIST_FILES)
     );
+
+    /** The {@link ClassLoader} used to look up the allowlisted Java classes, constructors, methods, and fields. */
+    public final ClassLoader classLoader;
 
     /** The {@link List} of all the allowlisted Painless classes. */
     public final List<AllowlistClass> allowlistClasses;
@@ -51,14 +71,8 @@ public final class Allowlist extends Whitelist {
         List<AllowlistClassBinding> allowlistClassBindings,
         List<AllowlistInstanceBinding> allowlistInstanceBindings
     ) {
-        super(
-            classLoader,
-            allowlistClasses.stream().map(e -> (WhitelistClass) e).collect(Collectors.toList()),
-            allowlistImportedMethods.stream().map(e -> (WhitelistMethod) e).collect(Collectors.toList()),
-            allowlistClassBindings.stream().map(e -> (WhitelistClassBinding) e).collect(Collectors.toList()),
-            allowlistInstanceBindings.stream().map(e -> (WhitelistInstanceBinding) e).collect(Collectors.toList())
-        );
 
+        this.classLoader = Objects.requireNonNull(classLoader);
         this.allowlistClasses = Collections.unmodifiableList(Objects.requireNonNull(allowlistClasses));
         this.allowlistImportedMethods = Collections.unmodifiableList(Objects.requireNonNull(allowlistImportedMethods));
         this.allowlistClassBindings = Collections.unmodifiableList(Objects.requireNonNull(allowlistClassBindings));

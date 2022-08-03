@@ -36,8 +36,20 @@ import org.opensearch.script.ScriptContext;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 public interface PainlessExtension {
 
-    Map<ScriptContext<?>, List<Whitelist>> getContextWhitelists();
+    /** @deprecated As of 2.2, because supporting inclusive language, replaced by {@link #getContextAllowlists()} */
+    @Deprecated
+    default Map<ScriptContext<?>, List<Whitelist>> getContextWhitelists() {
+        throw new UnsupportedOperationException("Must be overridden");
+    }
+
+    // TODO: Remove the default implementation after removing the deprecated getContextWhitelists()
+    default Map<ScriptContext<?>, List<Allowlist>> getContextAllowlists() {
+        return getContextWhitelists().entrySet()
+            .stream()
+            .collect(Collectors.toMap(k -> k.getKey(), v -> v.getValue().stream().map(e -> (Allowlist) e).collect(Collectors.toList())));
+    }
 }
