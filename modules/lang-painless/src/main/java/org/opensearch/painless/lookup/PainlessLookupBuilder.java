@@ -36,13 +36,14 @@ import org.opensearch.bootstrap.BootstrapInfo;
 import org.opensearch.painless.Def;
 import org.opensearch.painless.MethodWriter;
 import org.opensearch.painless.WriterConstants;
+import org.opensearch.painless.spi.Allowlist;
+import org.opensearch.painless.spi.AllowlistClass;
+import org.opensearch.painless.spi.AllowlistClassBinding;
+import org.opensearch.painless.spi.AllowlistConstructor;
+import org.opensearch.painless.spi.AllowlistField;
+import org.opensearch.painless.spi.AllowlistInstanceBinding;
+import org.opensearch.painless.spi.AllowlistMethod;
 import org.opensearch.painless.spi.Whitelist;
-import org.opensearch.painless.spi.WhitelistClass;
-import org.opensearch.painless.spi.WhitelistClassBinding;
-import org.opensearch.painless.spi.WhitelistConstructor;
-import org.opensearch.painless.spi.WhitelistField;
-import org.opensearch.painless.spi.WhitelistInstanceBinding;
-import org.opensearch.painless.spi.WhitelistMethod;
 import org.opensearch.painless.spi.annotation.InjectConstantAnnotation;
 import org.opensearch.painless.spi.annotation.NoImportAnnotation;
 import org.objectweb.asm.ClassWriter;
@@ -70,6 +71,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static org.opensearch.painless.WriterConstants.DEF_TO_B_BYTE_IMPLICIT;
 import static org.opensearch.painless.WriterConstants.DEF_TO_B_CHARACTER_IMPLICIT;
@@ -126,13 +128,13 @@ public final class PainlessLookupBuilder {
         }
     }
 
-    public static PainlessLookup buildFromWhitelists(List<Whitelist> allowlists) {
+    public static PainlessLookup buildFromAllowlists(List<Allowlist> allowlists) {
         PainlessLookupBuilder painlessLookupBuilder = new PainlessLookupBuilder();
         String origin = "internal error";
 
         try {
-            for (Whitelist allowlist : allowlists) {
-                for (WhitelistClass allowlistClass : allowlist.whitelistClasses) {
+            for (Allowlist allowlist : allowlists) {
+                for (AllowlistClass allowlistClass : allowlist.allowlistClasses) {
                     origin = allowlistClass.origin;
                     painlessLookupBuilder.addPainlessClass(
                         allowlist.classLoader,
@@ -142,11 +144,11 @@ public final class PainlessLookupBuilder {
                 }
             }
 
-            for (Whitelist allowlist : allowlists) {
-                for (WhitelistClass allowlistClass : allowlist.whitelistClasses) {
+            for (Allowlist allowlist : allowlists) {
+                for (AllowlistClass allowlistClass : allowlist.allowlistClasses) {
                     String targetCanonicalClassName = allowlistClass.javaClassName.replace('$', '.');
 
-                    for (WhitelistConstructor allowlistConstructor : allowlistClass.whitelistConstructors) {
+                    for (AllowlistConstructor allowlistConstructor : allowlistClass.allowlistConstructors) {
                         origin = allowlistConstructor.origin;
                         painlessLookupBuilder.addPainlessConstructor(
                             targetCanonicalClassName,
@@ -155,7 +157,7 @@ public final class PainlessLookupBuilder {
                         );
                     }
 
-                    for (WhitelistMethod allowlistMethod : allowlistClass.whitelistMethods) {
+                    for (AllowlistMethod allowlistMethod : allowlistClass.allowlistMethods) {
                         origin = allowlistMethod.origin;
                         painlessLookupBuilder.addPainlessMethod(
                             allowlist.classLoader,
@@ -168,7 +170,7 @@ public final class PainlessLookupBuilder {
                         );
                     }
 
-                    for (WhitelistField allowlistField : allowlistClass.whitelistFields) {
+                    for (AllowlistField allowlistField : allowlistClass.allowlistFields) {
                         origin = allowlistField.origin;
                         painlessLookupBuilder.addPainlessField(
                             targetCanonicalClassName,
@@ -178,7 +180,7 @@ public final class PainlessLookupBuilder {
                     }
                 }
 
-                for (WhitelistMethod allowlistStatic : allowlist.whitelistImportedMethods) {
+                for (AllowlistMethod allowlistStatic : allowlist.allowlistImportedMethods) {
                     origin = allowlistStatic.origin;
                     painlessLookupBuilder.addImportedPainlessMethod(
                         allowlist.classLoader,
@@ -190,7 +192,7 @@ public final class PainlessLookupBuilder {
                     );
                 }
 
-                for (WhitelistClassBinding allowlistClassBinding : allowlist.whitelistClassBindings) {
+                for (AllowlistClassBinding allowlistClassBinding : allowlist.allowlistClassBindings) {
                     origin = allowlistClassBinding.origin;
                     painlessLookupBuilder.addPainlessClassBinding(
                         allowlist.classLoader,
@@ -202,7 +204,7 @@ public final class PainlessLookupBuilder {
                     );
                 }
 
-                for (WhitelistInstanceBinding allowlistInstanceBinding : allowlist.whitelistInstanceBindings) {
+                for (AllowlistInstanceBinding allowlistInstanceBinding : allowlist.allowlistInstanceBindings) {
                     origin = allowlistInstanceBinding.origin;
                     painlessLookupBuilder.addPainlessInstanceBinding(
                         allowlistInstanceBinding.targetInstance,
@@ -217,6 +219,12 @@ public final class PainlessLookupBuilder {
         }
 
         return painlessLookupBuilder.build();
+    }
+
+    /** @deprecated As of 2.2, because supporting inclusive language, replaced by {@link #buildFromAllowlists(List)} */
+    @Deprecated
+    public static PainlessLookup buildFromWhitelists(List<Whitelist> whitelists) {
+        return PainlessLookupBuilder.buildFromAllowlists(whitelists.stream().map(e -> (Allowlist) e).collect(Collectors.toList()));
     }
 
     // javaClassNamesToClasses is all the classes that need to be available to the custom classloader
