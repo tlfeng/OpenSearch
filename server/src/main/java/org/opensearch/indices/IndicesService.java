@@ -132,6 +132,7 @@ import org.opensearch.index.shard.IndexShardState;
 import org.opensearch.index.shard.IndexingOperationListener;
 import org.opensearch.index.shard.IndexingStats;
 import org.opensearch.index.shard.ShardId;
+import org.opensearch.index.shard.ShardPath;
 import org.opensearch.index.store.remote.filecache.FileCacheCleaner;
 import org.opensearch.index.translog.InternalTranslogFactory;
 import org.opensearch.index.translog.RemoteBlobStoreInternalTranslogFactory;
@@ -160,6 +161,7 @@ import org.opensearch.search.query.QuerySearchResult;
 import org.opensearch.threadpool.ThreadPool;
 
 import java.io.Closeable;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UncheckedIOException;
@@ -198,6 +200,7 @@ import static org.opensearch.common.util.concurrent.OpenSearchExecutors.daemonTh
 import static org.opensearch.index.IndexService.IndexCreationContext.CREATE_INDEX;
 import static org.opensearch.index.IndexService.IndexCreationContext.METADATA_VERIFICATION;
 import static org.opensearch.index.query.AbstractQueryBuilder.parseInnerQueryBuilder;
+import static org.opensearch.index.store.remote.directory.RemoteSnapshotDirectoryFactory.LOCAL_STORE_LOCATION;
 import static org.opensearch.search.SearchService.ALLOW_EXPENSIVE_QUERIES;
 
 /**
@@ -1683,6 +1686,30 @@ public class IndicesService extends AbstractLifecycleComponent
             }
         };
         return indicesRequestCache.getOrCompute(cacheEntity, supplier, reader, cacheKey);
+    }
+
+    public Map<String, Long> getFileCacheSizeByShard(ShardId shardId, boolean includeSegmentSize) throws IOException {
+        final ShardPath fileCacheShardPath = ShardPath.loadFileCachePath(nodeEnv, shardId);
+        final File segmentFilesDirectory = fileCacheShardPath.getDataPath().resolve(LOCAL_STORE_LOCATION).toFile();
+        if (includeSegmentSize) {
+            Map<String, Long> segmentSizeByName = new HashMap<>();
+            for (File file : segmentFilesDirectory.listFiles()) {
+                String fileName = file.getName();
+                String segmentName = fileName.substring(0, fileName.indexOf("."))  // get the file name without extension
+                    // Because some Lucene index files have got a suffix apart from the segment name, such as "_a1_Lucene90_0.doc",
+                    // need the second substring operation to filter segment name.
+                    .substring(0, fileName.indexOf("_", 1));
+                long currentSize = segmentSizeByName.containsKey(segmentName) ? segmentSizeByName.get(segmentName) : 0;
+                segmentSizeByName.put(segmentName, currentSize + file.length());
+            }
+            return segmentSizeByName;
+        } else {
+            long shardSize = Files.walk(fileCacheShardPath.getDataPath())
+                .filter(p -> p.toFile().isFile())
+                .mapToLong(p -> p.toFile().length())
+                .sum();
+            return new HashMap<>(shardId.getId(), shardSize);
+        }
     }
 
     /**
