@@ -87,6 +87,7 @@ public class ShardStats implements Writeable, ToXContentFragment {
         isCustomDataPath = in.readBoolean();
         seqNoStats = in.readOptionalWriteable(SeqNoStats::new);
         retentionLeaseStats = in.readOptionalWriteable(RetentionLeaseStats::new);
+        cacheSize = in.readMap(StreamInput::readString, StreamInput::readLong);
     }
 
     public ShardStats(
@@ -153,6 +154,7 @@ public class ShardStats implements Writeable, ToXContentFragment {
         out.writeBoolean(isCustomDataPath);
         out.writeOptionalWriteable(seqNoStats);
         out.writeOptionalWriteable(retentionLeaseStats);
+        out.writeMap(cacheSize, StreamOutput::writeString, StreamOutput::writeLong);
     }
 
     @Override
