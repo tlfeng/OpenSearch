@@ -57,6 +57,7 @@ import org.opensearch.transport.TransportService;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Transport action for retrieving indices stats
@@ -151,6 +152,7 @@ public class TransportIndicesStatsAction extends TransportBroadcastByNodeAction<
             seqNoStats = null;
             retentionLeaseStats = null;
         }
-        return new ShardStats(indexShard.routingEntry(), indexShard.shardPath(), commonStats, commitStats, seqNoStats, retentionLeaseStats);
+        Map<String, Long> cacheSize = indicesService.getFileCacheSizeByShard(indexShard.shardId(), false);
+        return new ShardStats(indexShard.routingEntry(), indexShard.shardPath(), commonStats, commitStats, seqNoStats, retentionLeaseStats, cacheSize);
     }
 }

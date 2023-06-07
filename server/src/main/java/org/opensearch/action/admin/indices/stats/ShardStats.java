@@ -45,6 +45,7 @@ import org.opensearch.index.seqno.SeqNoStats;
 import org.opensearch.index.shard.ShardPath;
 
 import java.io.IOException;
+import java.util.Map;
 
 /**
  * Shard Stats for OpenSearch
@@ -75,6 +76,7 @@ public class ShardStats implements Writeable, ToXContentFragment {
     private String dataPath;
     private String statePath;
     private boolean isCustomDataPath;
+    private Map<String, Long> cacheSize;
 
     public ShardStats(StreamInput in) throws IOException {
         shardRouting = new ShardRouting(in);
@@ -93,7 +95,8 @@ public class ShardStats implements Writeable, ToXContentFragment {
         final CommonStats commonStats,
         final CommitStats commitStats,
         final SeqNoStats seqNoStats,
-        final RetentionLeaseStats retentionLeaseStats
+        final RetentionLeaseStats retentionLeaseStats,
+        final Map<String, Long> cacheSize
     ) {
         this.shardRouting = routing;
         this.dataPath = shardPath.getRootDataPath().toString();
@@ -103,6 +106,7 @@ public class ShardStats implements Writeable, ToXContentFragment {
         this.commonStats = commonStats;
         this.seqNoStats = seqNoStats;
         this.retentionLeaseStats = retentionLeaseStats;
+        this.cacheSize = cacheSize;
     }
 
     /**
@@ -137,6 +141,7 @@ public class ShardStats implements Writeable, ToXContentFragment {
     public boolean isCustomDataPath() {
         return isCustomDataPath;
     }
+    public Map<String, Long> getCacheSize() {return cacheSize;}
 
     @Override
     public void writeTo(StreamOutput out) throws IOException {

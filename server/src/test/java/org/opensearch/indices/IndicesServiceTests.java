@@ -507,7 +507,7 @@ public class IndicesServiceTests extends OpenSearchSingleNodeTestCase {
         assertThat(sim, instanceOf(BM25Similarity.class));
     }
 
-    public void testStatsByShardDoesNotDieFromExpectedExceptions() {
+    public void testStatsByShardDoesNotDieFromExpectedExceptions() throws IOException {
         final int shardCount = randomIntBetween(2, 5);
         final int failedShardId = randomIntBetween(0, shardCount - 1);
 

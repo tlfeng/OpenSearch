@@ -193,7 +193,8 @@ public class TransportClusterStatsAction extends TransportNodesAction<
                             new CommonStats(indicesService.getIndicesQueryCache(), indexShard, SHARD_STATS_FLAGS),
                             commitStats,
                             seqNoStats,
-                            retentionLeaseStats
+                            retentionLeaseStats,
+                            indicesService.getFileCacheSizeByShard(indexShard.shardId(), false)
                         )
                     );
                 }

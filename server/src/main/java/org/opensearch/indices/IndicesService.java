@@ -575,6 +575,8 @@ public class IndicesService extends AbstractLifecycleComponent
                 } catch (IllegalIndexShardStateException | AlreadyClosedException e) {
                     // we can safely ignore illegal state on ones that are closing for example
                     logger.trace(() -> new ParameterizedMessage("{} ignoring shard stats", indexShard.shardId()), e);
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
             }
         }
@@ -582,7 +584,7 @@ public class IndicesService extends AbstractLifecycleComponent
         return statsByShard;
     }
 
-    IndexShardStats indexShardStats(final IndicesService indicesService, final IndexShard indexShard, final CommonStatsFlags flags) {
+    IndexShardStats indexShardStats(final IndicesService indicesService, final IndexShard indexShard, final CommonStatsFlags flags) throws IOException {
         if (indexShard.routingEntry() == null) {
             return null;
         }
@@ -610,7 +612,8 @@ public class IndicesService extends AbstractLifecycleComponent
                     new CommonStats(indicesService.getIndicesQueryCache(), indexShard, flags),
                     commitStats,
                     seqNoStats,
-                    retentionLeaseStats
+                    retentionLeaseStats,
+                        getFileCacheSizeByShard(indexShard.shardId(), false)
                 ) }
         );
     }
@@ -1688,28 +1691,39 @@ public class IndicesService extends AbstractLifecycleComponent
         return indicesRequestCache.getOrCompute(cacheEntity, supplier, reader, cacheKey);
     }
 
-    public Map<String, Long> getFileCacheSizeByShard(ShardId shardId, boolean includeSegmentSize) throws IOException {
+    public Map<String, Long> getFileCacheSizeByShard(ShardId shardId, boolean includeSegmentSize) {
         final ShardPath fileCacheShardPath = ShardPath.loadFileCachePath(nodeEnv, shardId);
         final File segmentFilesDirectory = fileCacheShardPath.getDataPath().resolve(LOCAL_STORE_LOCATION).toFile();
-        if (includeSegmentSize) {
-            Map<String, Long> segmentSizeByName = new HashMap<>();
-            for (File file : segmentFilesDirectory.listFiles()) {
-                String fileName = file.getName();
-                String segmentName = fileName.substring(0, fileName.indexOf("."))  // get the file name without extension
-                    // Because some Lucene index files have got a suffix apart from the segment name, such as "_a1_Lucene90_0.doc",
-                    // need the second substring operation to filter segment name.
-                    .substring(0, fileName.indexOf("_", 1));
-                long currentSize = segmentSizeByName.containsKey(segmentName) ? segmentSizeByName.get(segmentName) : 0;
-                segmentSizeByName.put(segmentName, currentSize + file.length());
+        final IndexService service = indexService(shardId.getIndex());
+        if (service != null) {
+            IndexShard shard = service.getShardOrNull(shardId.id());
+            if (shard != null) {
+                if (includeSegmentSize) {
+                    Map<String, Long> segmentSizeByName = new HashMap<>();
+                    for (File file : segmentFilesDirectory.listFiles()) {
+                        String fileName = file.getName();
+                        String segmentName = fileName.substring(0, fileName.indexOf("."))  // get the file name without extension
+                                // Because some Lucene index files have got a suffix apart from the segment name, such as "_a1_Lucene90_0.doc",
+                                // need the second substring operation to filter segment name.
+                                .substring(0, fileName.indexOf("_", 1));
+                        long currentSize = segmentSizeByName.containsKey(segmentName) ? segmentSizeByName.get(segmentName) : 0;
+                        segmentSizeByName.put(segmentName, currentSize + file.length());
+                    }
+                    return segmentSizeByName;
+                } else {
+                    long shardSize = 0L;
+                    try {
+                        shardSize = Files.walk(fileCacheShardPath.getDataPath())
+                                .filter(p -> p.toFile().isFile())
+                                .mapToLong(p -> p.toFile().length())
+                                .sum();
+                    } catch (IOException e) {
+                    }
+                    return new HashMap<>(shardId.getId(), shardSize);
+                }
             }
-            return segmentSizeByName;
-        } else {
-            long shardSize = Files.walk(fileCacheShardPath.getDataPath())
-                .filter(p -> p.toFile().isFile())
-                .mapToLong(p -> p.toFile().length())
-                .sum();
-            return new HashMap<>(shardId.getId(), shardSize);
         }
+        return null;
     }
 
     /**
