@@ -152,7 +152,9 @@ public class TransportIndicesStatsAction extends TransportBroadcastByNodeAction<
             seqNoStats = null;
             retentionLeaseStats = null;
         }
+        logger.always().log("shard id: "+ indexShard.shardId().id());
         Map<String, Long> cacheSize = indicesService.getFileCacheSizeByShard(indexShard.shardId(), false);
+        logger.always().log("cacheSizeMap: "+ cacheSize + " cacheSize: " + cacheSize.get(String.valueOf(indexShard.shardId().id())));
         return new ShardStats(indexShard.routingEntry(), indexShard.shardPath(), commonStats, commitStats, seqNoStats, retentionLeaseStats, cacheSize);
     }
 }

@@ -1694,6 +1694,7 @@ public class IndicesService extends AbstractLifecycleComponent
     public Map<String, Long> getFileCacheSizeByShard(ShardId shardId, boolean includeSegmentSize) {
         final ShardPath fileCacheShardPath = ShardPath.loadFileCachePath(nodeEnv, shardId);
         final File segmentFilesDirectory = fileCacheShardPath.getDataPath().resolve(LOCAL_STORE_LOCATION).toFile();
+        logger.always().log("segmentFilesDirectory: " + segmentFilesDirectory.getPath());
         final IndexService service = indexService(shardId.getIndex());
         if (service != null) {
             IndexShard shard = service.getShardOrNull(shardId.id());
@@ -1719,7 +1720,8 @@ public class IndicesService extends AbstractLifecycleComponent
                                 .sum();
                     } catch (IOException e) {
                     }
-                    return new HashMap<>(shardId.getId(), shardSize);
+                    logger.always().log("shard size: " + shardSize);
+                    return Collections.singletonMap(String.valueOf(shardId.id()), shardSize);
                 }
             }
         }

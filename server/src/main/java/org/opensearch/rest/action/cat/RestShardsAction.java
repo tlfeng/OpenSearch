@@ -43,6 +43,7 @@ import org.opensearch.cluster.routing.ShardRouting;
 import org.opensearch.cluster.routing.UnassignedInfo;
 import org.opensearch.common.Table;
 import org.opensearch.common.logging.DeprecationLogger;
+import org.opensearch.common.unit.ByteSizeValue;
 import org.opensearch.common.unit.TimeValue;
 import org.opensearch.core.common.Strings;
 import org.opensearch.index.cache.query.QueryCacheStats;
@@ -310,7 +311,7 @@ public class RestShardsAction extends AbstractCatAction {
             if (shardStats == null) {
                 table.addCell(null);
             } else {
-                table.addCell(shardStats.getCacheSize().get(shard.shardId()));
+                table.addCell(new ByteSizeValue(shardStats.getCacheSize().get(String.valueOf(shard.id()))));
             }
             if (shard.assignedToNode()) {
                 String ip = state.getState().nodes().get(shard.currentNodeId()).getHostAddress();
