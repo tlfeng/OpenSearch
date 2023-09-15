@@ -36,9 +36,11 @@ import org.opensearch.OpenSearchException;
 import org.opensearch.action.admin.cluster.settings.ClusterUpdateSettingsRequest;
 import org.opensearch.action.search.MultiSearchResponse;
 import org.opensearch.action.search.SearchResponse;
+import org.opensearch.cluster.metadata.IndexMetadata;
 import org.opensearch.common.geo.GeoPoint;
 import org.opensearch.common.settings.Settings;
 import org.opensearch.common.unit.DistanceUnit;
+import org.opensearch.common.unit.TimeValue;
 import org.opensearch.common.xcontent.XContentFactory;
 import org.opensearch.common.xcontent.XContentType;
 import org.opensearch.core.common.bytes.BytesArray;
@@ -182,6 +184,56 @@ public class PercolatorQuerySearchIT extends OpenSearchIntegTestCase {
         assertThat(response.getHits().getAt(2).getFields().get("_percolator_document_slot").getValues(), equalTo(Arrays.asList(1)));
     }
 
+    public void testRealTimePercolateSearch() throws Exception {
+        final String INDEX_NAME = "test-index";
+//        final String primary = internalCluster().startDataOnlyNode();
+//        // refresh interval disabled to ensure refresh rate of index (when data is ready for search) doesn't affect realtime get
+//        assertAcked(
+//                prepareCreate(INDEX_NAME).setSettings(Settings.builder().put("index.refresh_interval", -1).put(indexSettings()))
+//        );
+//
+//        final String replica = internalCluster().startDataOnlyNode();
+//        ensureGreen(INDEX_NAME);
+//
+//        SearchResponse response = client().prepareSearch()
+//                .setQuery(new PercolateQueryBuilder("query", source, MediaTypeRegistry.JSON))
+//                .get();
+
+//        final String primary = internalCluster().startDataOnlyNode();
+//        final String replica = internalCluster().startDataOnlyNode();
+    
+        assertAcked(
+                client().admin()
+                        .indices()
+                        .prepareCreate("test")
+                        .setMapping("id", "type=keyword", "field1", "type=keyword", "field2", "type=keyword", "query", "type=percolator")
+//                        .setSettings(
+//                                Settings.builder()
+//                                        .put(IndexMetadata.SETTING_NUMBER_OF_REPLICAS, 1)
+//                                        .put("index.refresh_interval", -1)
+//                        )
+        );
+        ensureGreen("test");
+        
+        client().prepareIndex("test")
+                .setId("1")
+                .setSource(jsonBuilder().startObject().field("id", "1").field("query", matchAllQuery()).endObject())
+                .get();
+        // client().admin().indices().prepareRefresh().get();
+
+        BytesReference source = BytesReference.bytes(jsonBuilder().startObject().field("field1", "value").endObject());
+        logger.info("percolating doc with 1 field");
+        SearchResponse response = client().prepareSearch()
+                .setQuery(new PercolateQueryBuilder("query", source, MediaTypeRegistry.JSON))
+                // .setPreference("_replica")
+                .addSort("id", SortOrder.ASC)
+                .get();
+        assertHitCount(response, 1);
+        assertThat(response.getHits().getAt(0).getId(), equalTo("1"));
+        assertThat(response.getHits().getAt(0).getFields().get("_percolator_document_slot").getValue(), equalTo(0));
+
+    }
+    
     public void testPercolatorRangeQueries() throws Exception {
         assertAcked(
             client().admin()
